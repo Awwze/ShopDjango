@@ -1,0 +1,36 @@
+/* static/shop/styles.css */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border: 1px solid #e0e0e0;
+}
+
+.card-title {
+    font-weight: bold;
+    color: #343a40;
+}
+
+.card-text {
+    font-size: 1rem;
+    color: #495057;
+}
+
+.alert {
+    font-size: 1rem;
+}
+
+h3 {
+    margin-top: 2rem;
+    color: #343a40;
+}
+
+.btn-primary {
+    background-color: #007bff;
+}
+
+.btn-success {
+    background-color: #28a745;
+}

@@ -1,0 +1,71 @@
+{% extends 'shop/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ product.name }} Details{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6">
+            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+        </div>
+        <!-- Product Details -->
+        <div class="col-md-6">
+            <h2 class="mb-3">{{ product.name }}</h2>
+            <p class="lead">{{ product.description }}</p>
+            <p class="h4 text-success"><strong>Price: ${{ product.price }}</strong></p>
+            <form method="post" action="{% url 'add_to_cart' product.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary mt-3">Add to Cart</button>
+            </form>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <h3 class="mt-5">Комментарии:</h3>
+    {% for comment in comments %}
+        <div class="card my-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ comment.author.username }} ({{ comment.rating }} звезды)</h5>
+                <p class="card-text">{{ comment.text }}</p>
+                <p class="card-text"><small class="text-muted">Добавлено: {{ comment.created_at }}</small></p>
+            </div>
+        </div>
+    {% empty %}
+        <div class="alert alert-info">Нет комментариев.</div>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+        <h3 class="mt-4">Добавить комментарий:</h3>
+        <form method="post" class="my-3">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="rating">Оценка:</label>
+                <select name="rating" class="form-control" id="rating">
+                    <option value="1">1 звезда</option>
+                    <option value="2">2 звезды</option>
+                    <option value="3">3 звезды</option>
+                    <option value="4">4 звезды</option>
+                    <option value="5">5 звезд</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="text">Ваш комментарий:</label>
+                <textarea name="text" class="form-control" rows="3" placeholder="Введите ваш комментарий..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Добавить</button>
+        </form>
+    {% else %}
+        <div class="alert alert-warning mt-4">
+            Чтобы оставить комментарий, вам нужно <a href="{% url 'login' %}">войти</a> или <a href="{% url 'register' %}">зарегистрироваться</a>.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+{% endblock %}
