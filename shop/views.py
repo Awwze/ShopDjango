@@ -33,18 +33,22 @@ def product_detail(request, product_id):
 def product_list(request):
     categories = Category.objects.all()
     selected_category = request.GET.get('category')
+    search_query = request.GET.get('q')
+
+    products = Product.objects.all()
 
     if selected_category:
-        products = Product.objects.filter(category_id=selected_category)
-    else:
-        products = Product.objects.all()
+        products = products.filter(category_id=selected_category)
+
+    if search_query:
+        products = products.filter(name__icontains=search_query)
 
     context = {
-        'products': products,
         'categories': categories,
-        'selected_category': selected_category,
+        'products': products,
+        'selected_category': int(selected_category) if selected_category else None,
+        'search_query': search_query,
     }
-
     return render(request, 'shop/product_list.html', context)
 
 def register(request):
@@ -124,6 +128,7 @@ def update_cart(request, product_id):
 
     return redirect('cart')
 
+
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -161,7 +166,13 @@ def remove_from_cart(request, product_id):
 def product_search(request):
     query = request.GET.get('q')
     products = Product.objects.filter(name__icontains=query) if query else Product.objects.all()
-    return render(request, 'shop/product_list.html', {'products': products, 'query': query})
+    categories = Category.objects.all()  # Получаем все категории
+
+    return render(request, 'shop/product_list.html', {
+        'products': products,
+        'query': query,
+        'categories': categories,  # Передаем категории в шаблон
+    })
 
 def add_product(request):
     if request.method == 'POST':

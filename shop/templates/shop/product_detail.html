@@ -2,71 +2,125 @@
 
 {% load static %}
 
-{% block title %}{{ product.name }} Details{% endblock %}
+{% block title %}
+Product List
+{% endblock %}
 
 {% block content %}
 <div class="container my-5">
+    <h1 class="my-4 text-center">Products</h1>
+
     <div class="row">
-        <!-- Product Image -->
-        <div class="col-md-6">
-            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
-        </div>
-        <!-- Product Details -->
-        <div class="col-md-6">
-            <h2 class="mb-3">{{ product.name }}</h2>
-            <p class="lead">{{ product.description }}</p>
-            <p>Количество на складе: {{ product.stock }}</p>
-            <p class="h4 text-success"><strong>Price: ${{ product.price }}</strong></p>
-            <form method="post" action="{% url 'add_to_cart' product.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary mt-3">Add to Cart</button>
-            </form>
-        </div>
+        <!-- Sidebar with Categories -->
+        <aside class="col-md-3">
+            <h2 class="text-center">Categories</h2>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="?">All</a>
+                </li>
+                {% for category in categories %}
+                    <li class="list-group-item">
+                        <a href="?category={{ category.id }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                           {% if selected_category == category.id %} style="font-weight:bold;"{% endif %}>
+                            {{ category.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+        <!-- Product List in Two Rows of Three Products -->
+        <main class="col-md-9">
+            <div class="row">
+                {% for product in products %}
+                    <div class="col-md-4 mb-4"> <!-- 3 products per row -->
+                        <div class="card h-100 shadow-lg" style="border-radius: 10px;">
+                            <a href="{% url 'product_detail' product.id %}">
+                                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}"
+                                     style="border-top-left-radius: 10px; border-top-right-radius: 10px;">
+                            </a>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text">{{ product.description|truncatewords:20 }}</p>
+                                <p class="card-text text-success"><strong>Price: ${{ product.price }}</strong></p>
+                                <a href="{% url 'product_detail' product.id %}" class="btn btn-info mb-2">View Details</a>
+                                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary mt-auto">Add to Cart</a>
+                                <a href="{% url 'add_to_wishlist' product.id %}" class="btn btn-warning mt-3">Add to Wishlist</a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <p>No products found in this category.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for i in products.paginator.page_range %}
+                        <li class="page-item {% if products.number == i %}active{% endif %}">
+                            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.paginator.num_pages }}" aria-label="Last">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </main>
     </div>
-
-    <hr class="my-4">
-
-    <h3 class="mt-5">Комментарии:</h3>
-    {% for comment in comments %}
-        <div class="card my-3">
-            <div class="card-body">
-                <h5 class="card-title">{{ comment.author.username }} ({{ comment.rating }} звезды)</h5>
-                <p class="card-text">{{ comment.text }}</p>
-                <p class="card-text"><small class="text-muted">Добавлено: {{ comment.created_at }}</small></p>
-            </div>
-        </div>
-    {% empty %}
-        <div class="alert alert-info">Нет комментариев.</div>
-    {% endfor %}
-
-    {% if user.is_authenticated %}
-        <h3 class="mt-4">Добавить комментарий:</h3>
-        <form method="post" class="my-3">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="rating">Оценка:</label>
-                <select name="rating" class="form-control" id="rating">
-                    <option value="1">1 звезда</option>
-                    <option value="2">2 звезды</option>
-                    <option value="3">3 звезды</option>
-                    <option value="4">4 звезды</option>
-                    <option value="5">5 звезд</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="text">Ваш комментарий:</label>
-                <textarea name="text" class="form-control" rows="3" placeholder="Введите ваш комментарий..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-success">Добавить</button>
-        </form>
-    {% else %}
-        <div class="alert alert-warning mt-4">
-            Чтобы оставить комментарий, вам нужно <a href="{% url 'login' %}">войти</a> или <a href="{% url 'register' %}">зарегистрироваться</a>.
-        </div>
-    {% endif %}
 </div>
-{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+<style>
+    body {
+        background-color: #f8f9fa; /* Light background */
+    }
+
+    .card {
+        transition: transform 0.3s; /* Smooth scaling on hover */
+    }
+
+    .card:hover {
+        transform: scale(1.05); /* Card scaling on hover */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Shadow on hover */
+    }
+
+    .list-group-item {
+        transition: background-color 0.3s; /* Smooth background transition */
+    }
+
+    .list-group-item:hover {
+        background-color: #e9ecef; /* Background color on hover */
+    }
+
+    h1, h2 {
+        font-family: 'Arial', sans-serif; /* Header font */
+    }
+</style>
+{% endblock %}
 {% endblock %}
