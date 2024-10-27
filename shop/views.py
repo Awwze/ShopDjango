@@ -1,7 +1,8 @@
 from django.contrib.auth import login, logout
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review, Wishlist, Category, UserRegistrationForm, UserLoginForm, CartItem, CommentForm
+from .models import Product, Review, Wishlist, Category,  UserLoginForm, CartItem
 from django.contrib.auth.decorators import login_required
+from .forms import CommentForm, UserRegistrationForm
 from django.contrib import messages
 from django.core.paginator import Paginator
 
@@ -129,6 +130,19 @@ def product_search(request):
     query = request.GET.get('q')
     products = Product.objects.filter(name__icontains=query) if query else Product.objects.all()
     return render(request, 'shop/product_list.html', {'products': products, 'query': query})
+
+def add_product(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        price = request.POST.get('price')
+        description = request.POST.get('description')
+        image = request.FILES.get('image')
+
+        product = Product(name=name, price=price, description=description, image=image)
+        product.save()
+        return redirect('product_list')
+
+    return render(request, 'shop/add_product.html')
 
 def add_to_wishlist(request, product_id):
     product = get_object_or_404(Product, id=product_id)
