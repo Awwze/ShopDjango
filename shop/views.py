@@ -13,7 +13,7 @@ def remove_from_wishlist(request, product_id):
     return redirect('wishlist')
 
 def product_detail(request, product_id):
-    product = Product.objects.get(id=product_id)
+    product = get_object_or_404(Product, id=product_id)
     comments = product.reviews.all()
 
     if request.method == 'POST' and request.user.is_authenticated:
@@ -24,7 +24,11 @@ def product_detail(request, product_id):
         messages.success(request, 'Ваш комментарий был добавлен!')
         return redirect('product_detail', product_id=product_id)
 
-    return render(request, 'shop/product_detail.html', {'product': product, 'comments': comments})
+    return render(request, 'shop/product_detail.html', {
+        'product': product,
+        'comments': comments,
+    })
+
 
 def product_list(request):
     categories = Category.objects.all()
@@ -84,7 +88,7 @@ def add_product(request):
 
 @login_required
 def cart_view(request):
-    cart_items = CartItem.objects.all()
+    cart_items = CartItem.objects.filter(user=request.user)
     total_price = sum(item.total_price for item in cart_items)
 
     return render(request, 'shop/cart.html', {
@@ -92,39 +96,67 @@ def cart_view(request):
         'total_price': total_price
     })
 
+
+@login_required
 def update_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    quantity = request.POST.get('quantity')
+    cart_item = get_object_or_404(CartItem, product=product, user=request.user)
 
-    if quantity is not None:
-        quantity = int(quantity)
+    quantity = int(request.POST.get('quantity'))
 
-        # Prevent quantity from going below 1
-        if quantity < 1:
-            # Optionally, remove item from cart if quantity is zero or less
-            CartItem.objects.filter(product=product).delete()
-        else:
-            # Update cart item quantity logic
-            cart_item, created = CartItem.objects.get_or_create(product=product)
+    if quantity > cart_item.quantity:
+        if product.stock >= (quantity - cart_item.quantity):
+            product.stock -= (quantity - cart_item.quantity)
             cart_item.quantity = quantity
-            cart_item.save()
+        else:
+            messages.error(request, "Недостаточно товара на складе.")
+    elif quantity < cart_item.quantity:
+        product.stock += (cart_item.quantity - quantity)
+        cart_item.quantity = quantity
 
-    return redirect('cart')  # Adjust to redirect to your cart view
+        if cart_item.quantity <= 0:
+            cart_item.delete()
+            messages.success(request, f"{product.name} был удален из вашей корзины.")
+
+    product.save()
+    if cart_item.quantity > 0:
+        cart_item.save()
+
+    return redirect('cart')
 
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    cart_item, created = CartItem.objects.get_or_create(product=product)
-    if not created:
-        cart_item.quantity += 1
-        cart_item.save()
-    return redirect('cart')  # Redirect to cart view after adding
 
+    if product.stock > 0:
+        cart_item, created = CartItem.objects.get_or_create(product=product, user=request.user)
+        if not created:
+            cart_item.quantity += 1
+        else:
+            cart_item.quantity = 1
+        product.stock -= 1
+        product.save()
+
+        cart_item.save()
+    else:
+        messages.error(request, "Товар закончился на складе!")
+
+    return redirect('cart')
+
+
+
+@login_required
 def remove_from_cart(request, product_id):
     if request.method == "POST":
-        cart_item = get_object_or_404(CartItem, product_id=product_id)
-        cart_item.delete()  # Remove the item from the cart
+        cart_item = get_object_or_404(CartItem, product_id=product_id, user=request.user)
+        product = cart_item.product
+        product.stock += cart_item.quantity
+        product.save()
+
+        cart_item.delete()
+
     return redirect('cart')
+
 
 def product_search(request):
     query = request.GET.get('q')

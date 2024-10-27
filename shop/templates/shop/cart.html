@@ -30,6 +30,7 @@
                             <div class="input-group">
                                 <input type="number" name="quantity" value="{{ item.quantity }}" class="form-control text-center" style="width: 60px;" min="1" readonly>
                                 <button type="submit" name="quantity" value="{{ item.quantity|add:1 }}" class="btn btn-outline-secondary">+</button>
+                                <button type="submit" name="quantity" value="{{ item.quantity|add:-1 }}" class="btn btn-outline-secondary">-</button>
                             </div>
                         </form>
                     </td>
