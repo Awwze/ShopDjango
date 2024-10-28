@@ -1,4 +1,4 @@
-{% extends 'shop/base.html' %}
+{% extends 'base.html' %}
 
 {% load static %}
 
@@ -11,29 +11,29 @@ Product List
     <h1 class="my-4 text-center">Products</h1>
 
     <div class="row">
-        <!-- Боковая панель с категориями -->
-        <div class="col-md-3">
+        <!-- Sidebar with Categories -->
+        <aside class="col-md-3">
             <h2 class="text-center">Categories</h2>
             <ul class="list-group">
                 <li class="list-group-item">
                     <a href="?">All</a>
                 </li>
-                    {% for category in categories %}
-                        <li class="list-group-item">
-                            <a href="?category={{ category.id }}{% if search_query %}&q={{ search_query }}{% endif %}"
-                               {% if selected_category == category.id %} style="font-weight:bold;"{% endif %}>
-                                {{ category.name }}
-                            </a>
-                        </li>
-                    {% endfor %}
+                {% for category in categories %}
+                    <li class="list-group-item">
+                        <a href="?category={{ category.id }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                           {% if selected_category == category.id %} style="font-weight:bold;"{% endif %}>
+                            {{ category.name }}
+                        </a>
+                    </li>
+                {% endfor %}
             </ul>
-        </div>
+        </aside>
 
-        <!-- Список продуктов в два ряда по 3 продукта -->
-        <div class="col-md-9">
+        <!-- Product List in Two Rows of Three Products -->
+        <main class="col-md-9">
             <div class="row">
                 {% for product in products %}
-                    <div class="col-md-4 mb-4"> <!-- 3 продукта в ряд -->
+                    <div class="col-md-4 mb-4"> <!-- 3 products per row -->
                         <div class="card h-100 shadow-lg" style="border-radius: 10px;">
                             <a href="{% url 'product_detail' product.id %}">
                                 <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}"
@@ -56,7 +56,7 @@ Product List
                 {% endfor %}
             </div>
 
-            <!-- Пагинация -->
+            <!-- Pagination -->
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
                     {% if products.has_previous %}
@@ -90,7 +90,7 @@ Product List
                     {% endif %}
                 </ul>
             </nav>
-        </div>
+        </main>
     </div>
 </div>
 
@@ -98,28 +98,28 @@ Product List
 <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
 <style>
     body {
-        background-color: #f8f9fa; /* Легкий фон */
+        background-color: #f8f9fa; /* Light background */
     }
 
     .card {
-        transition: transform 0.3s; /* Плавное увеличение при наведении */
+        transition: transform 0.3s; /* Smooth scaling on hover */
     }
 
     .card:hover {
-        transform: scale(1.05); /* Увеличение карточки при наведении */
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Тень при наведении */
+        transform: scale(1.05); /* Card scaling on hover */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Shadow on hover */
     }
 
     .list-group-item {
-        transition: background-color 0.3s; /* Плавный переход цвета */
+        transition: background-color 0.3s; /* Smooth background transition */
     }
 
     .list-group-item:hover {
-        background-color: #e9ecef; /* Цвет фона при наведении */
+        background-color: #e9ecef; /* Background color on hover */
     }
 
     h1, h2 {
-        font-family: 'Arial', sans-serif; /* Шрифт заголовков */
+        font-family: 'Arial', sans-serif; /* Header font */
     }
 </style>
 {% endblock %}
