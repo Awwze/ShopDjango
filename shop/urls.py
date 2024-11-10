@@ -4,7 +4,6 @@ from .views import product_list, add_product, product_detail, cart_view, add_to_
 
 urlpatterns = [
     path('', product_list, name='product_list'),
-    path('add/', add_product, name='add_product'),
     path('product/<int:product_id>/', product_detail, name='product_detail'),
     path('cart/', cart_view, name='cart'),
     path('add_to_cart/<int:product_id>/', add_to_cart, name='add_to_cart'),
@@ -17,4 +16,5 @@ urlpatterns = [
     path('wishlist/', wishlist_view, name='wishlist'),
     path('add-to-wishlist/<int:product_id>/', add_to_wishlist, name='add_to_wishlist'),
     path('remove-from-wishlist/<int:product_id>/', remove_from_wishlist, name='remove_from_wishlist'),
+
 ]

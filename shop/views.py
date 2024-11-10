@@ -1,8 +1,8 @@
 from django.contrib.auth import login, logout
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review, Wishlist, Category,  UserLoginForm, CartItem
+from .models import Product, Review, Wishlist, Category, CartItem
 from django.contrib.auth.decorators import login_required
-from .forms import CommentForm, UserRegistrationForm
+from .forms import CommentForm, UserRegistrationForm, ProductForm, UserLoginForm
 from django.contrib import messages
 from django.core.paginator import Paginator
 
@@ -77,18 +77,6 @@ def logout_view(request):
     logout(request)
     return redirect('login')  # Перенаправление на страницу входа
 
-def add_product(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        price = request.POST.get('price')
-        description = request.POST.get('description')
-        image = request.FILES.get('image')
-
-        product = Product(name=name, price=price, description=description, image=image)
-        product.save()
-        return redirect('product_list')
-
-    return render(request, 'shop/add_product.html')
 
 @login_required
 def cart_view(request):
